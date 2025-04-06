@@ -1,0 +1,8 @@
+(
+    timeout: 1000,
+    binds: [
+        (trigger: [U], actions: [Click(Char('w'))]),
+        (trigger: [U, F], actions: [Click(Char('2'))]),
+        (trigger: [L], actions: [Click(Char('3'))]),
+    ]
+)

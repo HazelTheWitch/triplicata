@@ -1,3 +1,7 @@
+pub mod config;
+pub mod cube;
+pub mod state_machine;
+
 use uuid::{Uuid, uuid};
 
 pub const GAN_GEN2_SERVICE: Uuid = uuid!("6e400001-b5a3-f393-e0a9-e50e24dc4179");

@@ -1,13 +1,20 @@
-use std::process::ExitCode;
+use std::{
+    fs,
+    iter::repeat_n,
+    process::ExitCode,
+    time::{Duration, Instant},
+};
 
 use anyhow::bail;
 use btleplug::{
     api::{Central, CentralEvent, Manager as _, Peripheral, ScanFilter},
     platform::{Adapter, Manager, PeripheralId},
 };
+use enigo::{Direction, Enigo, Keyboard, Settings};
 use futures::StreamExt;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 use tracing_subscriber::EnvFilter;
+use triplicata::{config::Config, cube::move_stream_v2, state_machine::StateMachine};
 
 async fn scan_for_cubes(adapter: &Adapter) -> anyhow::Result<PeripheralId> {
     let mut events = adapter.events().await?;
@@ -38,6 +45,10 @@ async fn main() -> anyhow::Result<ExitCode> {
         .with_env_filter(EnvFilter::from_default_env())
         .init();
 
+    let config: Config = ron::from_str(&fs::read_to_string("config.ron")?)?;
+
+    info!("Parsed config with {} binds", config.binds.len());
+
     let manager = Manager::new().await?;
 
     let mut adapter_list = manager.adapters().await?;
@@ -48,7 +59,6 @@ async fn main() -> anyhow::Result<ExitCode> {
     }
 
     let adapter = adapter_list.swap_remove(0);
-    let adapter_state = adapter.adapter_state().await?;
 
     info!("Using adapter: {}", adapter.adapter_info().await?);
 
@@ -88,14 +98,36 @@ async fn main() -> anyhow::Result<ExitCode> {
         }
     }
 
-    println!("{v1_version:?}");
-    println!("{v1_hardware:?}");
-    println!("{v1_cube_state:?}");
-    println!("{v1_last_moves:?}");
-    println!("{v1_timing:?}");
-    println!("{v1_battery:?}");
-    println!("{v2_write:?}");
-    println!("{v2_read:?}");
+    if v1_version.is_some()
+        && v1_hardware.is_some()
+        && v1_cube_state.is_some()
+        && v1_last_moves.is_some()
+        && v1_timing.is_some()
+        && v1_battery.is_some()
+    {
+        todo!()
+    } else if v2_write.is_some() && v2_read.is_some() {
+        let moves = move_stream_v2(cube, v2_read.unwrap(), v2_write.unwrap()).await?;
+
+        let state_machine = StateMachine::new(moves, config);
+
+        let mut actions = state_machine.run();
+
+        let mut enigo = Enigo::new(&Settings::default())?;
+
+        while let Some(action) = actions.recv().await {
+            info!("{action:?}");
+
+            match action {
+                triplicata::config::Action::Press(key) => enigo.key(key, Direction::Press)?,
+                triplicata::config::Action::Release(key) => enigo.key(key, Direction::Release)?,
+                triplicata::config::Action::Click(key) => enigo.key(key, Direction::Click)?,
+            };
+        }
+    } else {
+        error!("Unknown protocol version");
+        return Ok(ExitCode::FAILURE);
+    }
 
     Ok(ExitCode::SUCCESS)
 }
