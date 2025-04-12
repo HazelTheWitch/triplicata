@@ -1,0 +1,8 @@
+--- config.rs
++++ config.rs
+@@ -20,4 +20,5 @@ pub enum Action {
+     Press(Key),
+     Release(Key),
+     Click(Key),
++    Delay(u64),
+ }

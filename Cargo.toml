@@ -2,6 +2,15 @@
 name = "triplicata"
 version = "0.1.0"
 edition = "2024"
+repository = "https://github.com/HazelTheWitch/triplicata"
+authors = ["Hazel Rella <hazelrella11@gmail.com>"]
+description = "Mapping from cube to keyboard"
+
+[package.metadata.wix]
+upgrade-guid = "6D265528-1663-4846-8833-FC016FC3F95E"
+path-guid = "390278CC-2F48-4A5D-BED5-CE50D2E2F141"
+license = false
+eula = false
 
 [dependencies]
 aes = "0.8.4"
@@ -15,3 +24,8 @@ tokio = { version = "1.44.1", features = ["full"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 uuid = "1.16.0"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
