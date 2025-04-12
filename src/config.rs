@@ -20,4 +20,5 @@ pub enum Action {
     Press(Key),
     Release(Key),
     Click(Key),
+    Delay(u64),
 }

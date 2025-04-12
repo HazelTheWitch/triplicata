@@ -2,6 +2,7 @@ use std::{
     fs,
     iter::repeat_n,
     process::ExitCode,
+    thread::sleep,
     time::{Duration, Instant},
 };
 
@@ -122,6 +123,7 @@ async fn main() -> anyhow::Result<ExitCode> {
                 triplicata::config::Action::Press(key) => enigo.key(key, Direction::Press)?,
                 triplicata::config::Action::Release(key) => enigo.key(key, Direction::Release)?,
                 triplicata::config::Action::Click(key) => enigo.key(key, Direction::Click)?,
+                triplicata::config::Action::Delay(delay) => sleep(Duration::from_millis(delay)),
             };
         }
     } else {
