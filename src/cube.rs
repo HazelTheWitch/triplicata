@@ -104,13 +104,13 @@ pub async fn move_stream_v2(
     read: Characteristic,
     write: Characteristic,
 ) -> anyhow::Result<tokio::sync::broadcast::Receiver<Move>> {
-    let device_key: [u8; 6] = if let Some(data) = device
+    let manufacturer_data = device
         .properties()
         .await?
         .ok_or(anyhow::anyhow!("could not get device properties"))?
-        .manufacturer_data
-        .get(&36097)
-    {
+        .manufacturer_data;
+
+    let device_key: [u8; 6] = if let Some(data) = manufacturer_data.values().next() {
         if data.len() >= 9 {
             let mut result = [0; 6];
             result.copy_from_slice(&data[3..9]);
@@ -119,7 +119,7 @@ pub async fn move_stream_v2(
             bail!("Device identifier invalid")
         }
     } else {
-        bail!("Manufacturer data missing device identifier")
+        bail!("Manufacturer data missing device identifier: {manufacturer_data:?}")
     };
 
     const GAN_V2_KEY: [u8; 16] = [
