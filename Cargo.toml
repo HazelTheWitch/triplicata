@@ -1,6 +1,6 @@
 [package]
 name = "triplicata"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 repository = "https://github.com/HazelTheWitch/triplicata"
 authors = ["Hazel Rella <hazelrella11@gmail.com>"]
@@ -16,7 +16,10 @@ eula = false
 aes = "0.8.4"
 anyhow = "1.0.97"
 btleplug = "0.11.7"
-enigo = { version = "0.3.0", features = ["serde", "wayland"], default-features = false }
+enigo = { version = "0.3.0", features = [
+    "serde",
+    "wayland",
+], default-features = false }
 futures = "0.3.31"
 ron = "0.9.0"
 serde = { version = "1.0.219", features = ["derive"] }
